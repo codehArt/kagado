@@ -19,7 +19,7 @@ serverefficiency.sort(key=float)
 # create a dict for calculating required all valid data
 servers = []
 for s in serverefficiency:
-    servers.append({"efficiency": s, "isavailable": True,"idle" : True, "customersserved": 0, "lastidletime": 0.0000,
+    servers.append({"efficiency": s, "isavailable": True, "customersserved": 0, "lastidletime": 0.0000,
                     "totalservedtime": 0.0000, "idletimespent": 0.0000, "timetobereleaved": 0.0000})
 
 # print servers
@@ -47,33 +47,32 @@ def processqueue(_q):
 
 print len(queue["customers"])
 
-currenttime = 0.0000
+currenttime = round(float(queue["customers"][0]["arrivaltime"]),4)
 # crawl time in terms of seconds
 isqueue = True
 count = 0 
-epsilon = 0.000001
+epsilon = 0.0001
 # abs(a - b)<epsilon
 while isqueue:
     # start server serving
-    currenttime = currenttime + 0.0001
+    # currenttime = currenttime + 0.0001
     # print "currenttime : " + str(round(currenttime,4))
     # and if customer processed pop that customers
+    print currenttime
     isinqueue = True
     for ser in servers:
         if ser["isavailable"] is True:
             # serve the customers and calculate
             # print ser["isavailable"] + "" +
             if len(queue["customers"]) > 0:
-                print round(currenttime,4) >= round(float(queue["customers"][0]["arrivaltime"]),4)
-                if ser["lastidletime"] <= queue["customers"][0]["arrivaltime"]:
+                if abs(round(currenttime,4) - round(ser["timetobereleaved"],4)) > epsilon:
+                # if ser["lastidletime"] <= round(float(queue["customers"][0]["arrivaltime"]),4):
                     requiredtimeforcustomers = float(
                         ser["efficiency"]) * float(queue["customers"][0]["timespend"])
                     # print requiredtimeforcustomers
-                    ser["timetobereleaved"] = currenttime + requiredtimeforcustomers
-                    ser["totalservedtime"] += requiredtimeforcustomers
+                    ser["timetobereleaved"] = round(float(queue["customers"][0]["arrivaltime"]) + requiredtimeforcustomers,4)
+                    ser["totalservedtime"] += round(requiredtimeforcustomers,4)
                     # print (ser["timetobereleaved"])
-                    if ser["idle"]:
-                        ser["idletimespent"] = currenttime - ser["lastidletime"]
                     isinqueue = False
                     ser["isavailable"] = False
                     ser["customersserved"] += 1
@@ -83,20 +82,31 @@ while isqueue:
     if not isinqueue:
         if len(queue["customers"]) > 0:
             queue["customers"].pop(0)
+            # print "popped"
+            if len(queue["customers"]) > 0:
+                currenttime = round(float(queue["customers"][0]["arrivaltime"]),4)
+            else:
+                break
     else:
         # don't delete it, save it until server got time next cycle
         # reset server here by crawling time.
         for ser in servers:
             if ser["isavailable"] is False:                
-                if ser["timetobereleaved"] >= currenttime:
+                # if ser["timetobereleaved"] >= currenttime:
                     ser["isavailable"] = True
-                    ser["idle"] = True
-                    ser["lastidletime"] = currenttime
+                    # ser["idle"] = True
+                    ser["lastidletime"] = ser["timetobereleaved"]
+                    print "available"
+                    # print ser
+                    # print currenttime
         pass
     if len(queue["customers"]) == 0:
         isqueue = False
+    
+    # currenttime
+    # break
 
-print queue["customers"]
+# print queue["customers"]
 print currenttime
 for s in servers:
     print s
