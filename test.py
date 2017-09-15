@@ -20,7 +20,7 @@ serverefficiency.sort(key=float)
 servers = []
 for s in serverefficiency:
     servers.append({"efficiency": s, "isavailable": True, "customersserved": 0,
-                    "totalservedtime": 0.0, "idletimespent": 0.00, "lastidletime" : 0.00})
+                    "totalservedtime": 0.0, "idletimespent": 0.00,"timetobereleaved" : 0.00, "lastidletime" : 0.00})
 
 # print servers
 for i in servers:
@@ -48,7 +48,7 @@ isqueue = True
 
 while isqueue:
     # start server serving
-    currenttime = currenttime + 1
+    currenttime = currenttime + 0.0001
     # print currenttime
     # and if customer processed pop that customers 
     isinqueue = True
@@ -58,6 +58,7 @@ while isqueue:
             if len(queue["customers"]) > 0: 
                 requiredtimeforcustomers = float(ser["efficiency"]) * float(queue["customers"][0]["timespend"])
                 print requiredtimeforcustomers
+                ser["timetobereleaved"] += requiredtimeforcustomers
             isinqueue = False
             ser["isavailable"] = False
             # print ser
@@ -65,6 +66,9 @@ while isqueue:
     if isinqueue:
         # don't delete it, save it until server got time next cycle
         # reset server here by crawling time.
+        for ser in servers:
+            if ser["timetobereleaved"] >= currenttime:
+                ser["isavailable"] = True
         pass
     else: 
         if len(queue["customers"]) > 0:
