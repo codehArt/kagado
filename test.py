@@ -125,11 +125,13 @@ while len(queue["customers"]) > 0:
         print currenttime
 for s in servers:
     print s
-server = open("cust.data", 'w')
+server = open("server.data", 'w')
+server.write(str(servers))
+cust = open("cust.data", 'w')
 finaldata = []
 for d in dataqueue:
     if d["waitingtime"] > 0.00000:
         finaldata.append(d)
         print d
 print len(finaldata)
-server.write(str(finaldata))
+cust.write(str(finaldata))
