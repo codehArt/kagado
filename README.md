@@ -1,2 +1,2 @@
 # kagado
-just run final.py
+just run test.py
