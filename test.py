@@ -20,7 +20,7 @@ serverefficiency.sort(key=float)
 servers = []
 for s in serverefficiency:
     servers.append({"efficiency": s, "isavailable": True, "customersserved": 0, "lastidletime": 0.0000,
-                    "totalservedtime": 0.0000, "idletimespent": 0.0000, "timetobereleaved": 0.0000})
+                    "totalservedtime": 0.0000, "idletimespent": 0.0000, "timetobereleaved": 0.0000,"servedcustomerrank" :[]})
 
 # print servers
 for i in servers:
@@ -28,11 +28,13 @@ for i in servers:
     pass
 # start reading queue from first person
 customers = []
+counter = 0
 for cust in linelist[noofserver + 1:]:
     d = cust.split()
     if len(d) is 2:
         customers.append({"arrivaltime": d[0], "timespend": d[1], "averagetimespentinqueue": 0.0000,
-                          "isprocessed": False})
+                          "isprocessed": False,"rank" : counter})
+        counter += 1
         # print customers
 
 queue = {"customers": customers, "greatestqueuelength": 0,
@@ -46,32 +48,40 @@ def processqueue(_q):
 
 
 print len(queue["customers"])
-
+nextarrivaltime = round(float(queue["customers"][0]["arrivaltime"]),4) 
 currenttime = round(float(queue["customers"][0]["arrivaltime"]),4)
 # crawl time in terms of seconds
 isqueue = True
 count = 0 
-epsilon = 0.0001
+epsilon = 0.0000
 # abs(a - b)<epsilon
 while isqueue:
     # start server serving
     # currenttime = currenttime + 0.0001
     # print "currenttime : " + str(round(currenttime,4))
     # and if customer processed pop that customers
-    print currenttime
+    if len(queue["customers"]) == 0:
+        isqueue = False
+        break
+    # print currenttime
     isinqueue = True
     for ser in servers:
-        if ser["isavailable"] is True:
-            # serve the customers and calculate
-            # print ser["isavailable"] + "" +
-            if len(queue["customers"]) > 0:
-                if abs(round(currenttime,4) - round(ser["timetobereleaved"],4)) > epsilon:
-                # if ser["lastidletime"] <= round(float(queue["customers"][0]["arrivaltime"]),4):
+        if len(queue["customers"]) > 0:
+            print "diff : " + str(abs(round(currenttime,4) - round(ser["timetobereleaved"],4)))
+            if abs(round(currenttime,4) - round(ser["timetobereleaved"],4)) > epsilon:
+            # if True:
+                if ser["isavailable"] is True:
+                    # serve the customers and calculate
+                    # print ser["isavailable"] + "" +
+            
+                    # if ser["lastidletime"] <= round(float(queue["customers"][0]["arrivaltime"]),4):
                     requiredtimeforcustomers = float(
                         ser["efficiency"]) * float(queue["customers"][0]["timespend"])
                     # print requiredtimeforcustomers
+                    # print "Time tobe releaved: " + str(round(float(queue["customers"][0]["arrivaltime"]) + requiredtimeforcustomers,4))
                     ser["timetobereleaved"] = round(float(queue["customers"][0]["arrivaltime"]) + requiredtimeforcustomers,4)
                     ser["totalservedtime"] += round(requiredtimeforcustomers,4)
+                    ser["servedcustomerrank"].append(queue["customers"][0]["rank"])
                     # print (ser["timetobereleaved"])
                     isinqueue = False
                     ser["isavailable"] = False
@@ -79,29 +89,28 @@ while isqueue:
                     # queue["customers"].pop(0)
                     break
             # print ser
-    if not isinqueue:
-        if len(queue["customers"]) > 0:
-            queue["customers"].pop(0)
-            # print "popped"
-            if len(queue["customers"]) > 0:
-                currenttime = round(float(queue["customers"][0]["arrivaltime"]),4)
-            else:
-                break
-    else:
-        # don't delete it, save it until server got time next cycle
+    if isinqueue:
         # reset server here by crawling time.
         for ser in servers:
-            if ser["isavailable"] is False:                
-                # if ser["timetobereleaved"] >= currenttime:
+            # if ser["isavailable"] is False:                
+            if abs(round(currenttime,4) - round(ser["timetobereleaved"],4)) > epsilon :
                     ser["isavailable"] = True
                     # ser["idle"] = True
                     ser["lastidletime"] = ser["timetobereleaved"]
-                    print "available"
+                    # print "available"
                     # print ser
                     # print currenttime
-        pass
-    if len(queue["customers"]) == 0:
-        isqueue = False
+        # pass
+    else:
+        # if len(queue["customers"]) > 0:
+        print "in else"
+        queue["customers"].pop(0)
+        # print "popped"
+        if len(queue["customers"]) > 0:
+            currenttime = round(float(queue["customers"][0]["arrivaltime"]),4)
+        else:
+            break
+   
     
     # currenttime
     # break
@@ -110,3 +119,5 @@ while isqueue:
 print currenttime
 for s in servers:
     print s
+server = open("server.data",'w')
+# customers = 

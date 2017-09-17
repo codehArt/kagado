@@ -90,6 +90,7 @@ while isqueue:
     else:
         # don't delete it, save it until server got time next cycle
         # reset server here by crawling time.
+        # set queue
         for ser in servers:
             if ser["isavailable"] is False:                
                 # if ser["timetobereleaved"] >= currenttime:
@@ -102,7 +103,6 @@ while isqueue:
         pass
     if len(queue["customers"]) == 0:
         isqueue = False
-    
     # currenttime
     # break
 
