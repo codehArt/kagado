@@ -51,6 +51,7 @@ queue = {"customers": customers, "greatestqueuelength": 0,
 def servercustomer(customer):
     served = False
     # print "serving"
+    servers.sort(lambda x,y : cmp(x["timetobereleaved"], y["rank"]))
     for s in servers:
         if s["isavailable"] == True:
             s["customersserved"] += 1
@@ -70,11 +71,14 @@ def resetallserver(time):
     co = 0
     for s in servers:
         # print str(s["timetobereleaved"]) + "  "+str(time)
-        if round(s["timetobereleaved"], 4) *10000 > round(time, 4)*10000:
-            s["isavailable"] = True
-            servergetempty = True
-            co += 1
-            # break
+        if not s["isavailable"]:
+            if round(s["timetobereleaved"], 4) * 10000 > round(time, 4)*10000:
+                s["isavailable"] = True
+                servergetempty = True
+                co += 1
+                # break
+        else:
+            s["lastidletime"] = time
     return servergetempty
 
 iscalled = True
@@ -95,9 +99,13 @@ def nextservertobereleaved():
 queuelength = 0
 isqueueavailable = False
 nexttime = 0.0000
+waitingqueue = []
 try:
     while len(queue["customers"]) > 0:
         # if anyserveravialable():
+        # if isqueueavailable:
+        #     isserved = servercustomer(waitingqueue[0])
+        # else:
         isserved = servercustomer(queue["customers"][0])
         if isserved:
             # pop that customer
@@ -114,7 +122,10 @@ try:
             nexttime = 0.0000
         else:
             pass
-            # nexttime = nextservertobereleaved()
+                # maintain queue
+                # isqueueavailable = True
+                # waitingqueue.append(queue["customers"].pop(0))
+                # nexttime = nextservertobereleaved()
 
 except :
     # print e
@@ -126,6 +137,7 @@ except :
         print "Served Customer : " + str(s["customersserved"])
         print "Last customer served time : " +str(s["timetobereleaved"])
         print "Total Served time : " + str(s["totalservedtime"])
+        print "Last Idle Time : " + str(s["lastidletime"])
         totalserved += s["customersserved"]
         totalservedtime += round(s["totalservedtime"],4)
         print "----------------------------------"
